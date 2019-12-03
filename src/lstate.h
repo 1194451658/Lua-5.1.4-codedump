@@ -134,6 +134,7 @@ struct lua_State {
 };
 
 
+// 快速访问lua_State中的global_State
 #define G(L)	(L->l_G)
 
 

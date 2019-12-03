@@ -63,6 +63,15 @@ typedef int (*lua_Writer) (lua_State *L, const void* p, size_t sz, void* ud);
 /*
 ** prototype for memory-allocation functions
 */
+
+// Lua State使用的分配内存的函数
+//  * 需要提供类似realloc的功能，但是也不完全相同
+//  * ud: lua_newState传入的黑盒数据
+//  * ptr: 指向要操作的内存。allocated/reallocated/freed 
+//  * osize: 原先block内存的大小；
+//      * Q: some code about what is being allocated ???
+//  * nsize: 新的block的大小
+// 参见文档： https://www.lua.org/manual/5.3/manual.html#lua_Alloc
 typedef void * (*lua_Alloc) (void *ud, void *ptr, size_t osize, size_t nsize);
 
 

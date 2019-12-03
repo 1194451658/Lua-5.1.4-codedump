@@ -17,6 +17,7 @@
 
 typedef LUAI_UINT32 lu_int32;
 
+// 可以计数整个lua可用内存大的类型
 typedef LUAI_UMEM lu_mem;
 
 typedef LUAI_MEM l_mem;
@@ -26,7 +27,7 @@ typedef LUAI_MEM l_mem;
 /* chars used as small naturals (so that `char' is reserved for characters) */
 typedef unsigned char lu_byte;
 
-
+// Q: 没有看懂这种-2是什么意思？
 #define MAX_SIZET	((size_t)(~(size_t)0)-2)
 
 #define MAX_LUMEM	((lu_mem)(~(lu_mem)0)-2)

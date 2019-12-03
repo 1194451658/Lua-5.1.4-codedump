@@ -198,6 +198,8 @@
 @@ LUA_QL describes how error messages quote program elements.
 ** CHANGE it if you want a different appearance.
 */
+
+// 添加单引号包围
 #define LUA_QL(x)	"'" x "'"
 #define LUA_QS		LUA_QL("%s")
 
@@ -417,6 +419,8 @@
 #define LUAI_UMEM	size_t
 #define LUAI_MEM	ptrdiff_t
 #else
+
+// Q: 16bit为什么用long？long不是4个字节码？
 /* 16-bit ints */
 #define LUAI_UINT32	unsigned long
 #define LUAI_INT32	long
