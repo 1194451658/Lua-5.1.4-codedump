@@ -55,6 +55,19 @@ typedef int (*lua_CFunction) (lua_State *L);
 /*
 ** functions that read/write blocks when loading/dumping Lua chunks
 */
+
+
+// The reader function used by lua_load.
+// Every time it needs another piece of the chunk,
+// lua_load calls the reader, passing along its data parameter.
+// The reader must return a pointer to a block of memory 
+// with a new piece of the chunk and set size to the block size.
+// The block must exist until the reader function is called again.
+// To signal the end of the chunk, the reader must return NULL or set size to zero.
+// The reader function may return pieces of any size greater than zero.
+
+// ud: 是传给lua_load()函数的，黑盒data参数
+// sz: 需要返回，sz个字节的大小
 typedef const char * (*lua_Reader) (lua_State *L, void *ud, size_t *sz);
 
 typedef int (*lua_Writer) (lua_State *L, const void* p, size_t sz, void* ud);
