@@ -55,6 +55,7 @@ typedef LUAI_UACNUMBER l_uacNumber;
 /* internal assertions for in-house debugging */
 #ifdef lua_assert
 
+// 就是增加一个lua_asset语句
 #define check_exp(c,e)		(lua_assert(c), (e))
 #define api_check(l,e)		lua_assert(e)
 

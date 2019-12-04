@@ -142,6 +142,7 @@ struct lua_State {
 ** Union of all collectable objects
 */
 union GCObject {
+    // 在lobject.h中定义
   GCheader gch;
   union TString ts;
   union Udata u;

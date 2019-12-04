@@ -17,22 +17,33 @@
 
 
 /* tags for values visible from Lua */
+
+// LUA_TTABLE是类型
+// LUA_TNIL     0
+// LUA_TTHREAD  8
+// LAST_TAG: 最后一个类型
 #define LAST_TAG	LUA_TTHREAD
 
+// NUM_TAGS: 类型的个数有几个
 #define NUM_TAGS	(LAST_TAG+1)
-
 
 /*
 ** Extra tags for non-values
 */
+
+// Q: 又定义了其他的类型？
+// proto
+// upvalue
+// dead key
 #define LUA_TPROTO	(LAST_TAG+1)
 #define LUA_TUPVAL	(LAST_TAG+2)
 #define LUA_TDEADKEY	(LAST_TAG+3)
 
-
 /*
 ** Union of all collectable objects
 */
+
+// 在lstate.h中定义
 typedef union GCObject GCObject;
 
 
@@ -40,6 +51,7 @@ typedef union GCObject GCObject;
 ** Common Header for all collectable objects (in macro form, to be
 ** included in other objects)
 */
+// lu_byte: llimit.h中定义
 #define CommonHeader	GCObject *next; lu_byte tt; lu_byte marked
 
 
@@ -56,11 +68,13 @@ typedef struct GCheader {
 /*
 ** Union of all Lua values
 */
+
+// lua中数值，通用的结构
 typedef union {
   GCObject *gc;
-  void *p;
-  lua_Number n;
-  int b;
+  void *p;          // light user data值
+  lua_Number n;     // Number值
+  int b;        // bool类型值
 } Value;
 
 
@@ -70,12 +84,20 @@ typedef union {
 
 #define TValuefields	Value value; int tt
 
+// Value结构之上
+// 专门一个字段，指明了是什么类型
 typedef struct lua_TValue {
   TValuefields;
 } TValue;
 
 
 /* Macros to test type */
+
+//
+// 判断TValue类型
+// o: 是TValue类型
+// 这里是判断tt的值
+// 
 #define ttisnil(o)	(ttype(o) == LUA_TNIL)
 #define ttisnumber(o)	(ttype(o) == LUA_TNUMBER)
 #define ttisstring(o)	(ttype(o) == LUA_TSTRING)
@@ -87,13 +109,29 @@ typedef struct lua_TValue {
 #define ttislightuserdata(o)	(ttype(o) == LUA_TLIGHTUSERDATA)
 
 /* Macros to access values */
+// 返回TValue的tt字段
+// 返回TValue到底是什么类型
 #define ttype(o)	((o)->tt)
+
+// iscollectable: 
+//  * 判断是否，可垃圾回收的类型
+//  * 返回真假
+// check_exp:
+//  * 就是额外的增加一个asset语句
+//  * 第一个参数，就是asset判断
+
+// gcvalue: 返回Value共用体中的gc
+// 这里的o都是TValue
+
+// Q：里边有部分是关于gc中取值的
 #define gcvalue(o)	check_exp(iscollectable(o), (o)->value.gc)
 #define pvalue(o)	check_exp(ttislightuserdata(o), (o)->value.p)
 #define nvalue(o)	check_exp(ttisnumber(o), (o)->value.n)
 #define rawtsvalue(o)	check_exp(ttisstring(o), &(o)->value.gc->ts)
+// Q: 这些有&符号的是？
 #define tsvalue(o)	(&rawtsvalue(o)->tsv)
 #define rawuvalue(o)	check_exp(ttisuserdata(o), &(o)->value.gc->u)
+// Q: 这些有&符号的是？
 #define uvalue(o)	(&rawuvalue(o)->uv)
 #define clvalue(o)	check_exp(ttisfunction(o), &(o)->value.gc->cl)
 #define hvalue(o)	check_exp(ttistable(o), &(o)->value.gc->h)
@@ -105,51 +143,76 @@ typedef struct lua_TValue {
 /*
 ** for internal debug only
 */
+
+// obj: 也是TValue类型
 #define checkconsistency(obj) \
   lua_assert(!iscollectable(obj) || (ttype(obj) == (obj)->value.gc->gch.tt))
 
+// Q:?
 #define checkliveness(g,obj) \
   lua_assert(!iscollectable(obj) || \
   ((ttype(obj) == (obj)->value.gc->gch.tt) && !isdead(g, (obj)->value.gc)))
 
 
 /* Macros to set values */
+
+// nil
+// 设置nil
 #define setnilvalue(obj) ((obj)->tt=LUA_TNIL)
 
+// n
+// 设置number
 #define setnvalue(obj,x) \
   { TValue *i_o=(obj); i_o->value.n=(x); i_o->tt=LUA_TNUMBER; }
 
+// p
+// 设置light user data
 #define setpvalue(obj,x) \
   { TValue *i_o=(obj); i_o->value.p=(x); i_o->tt=LUA_TLIGHTUSERDATA; }
 
+// b
+// 设置bool
 #define setbvalue(obj,x) \
   { TValue *i_o=(obj); i_o->value.b=(x); i_o->tt=LUA_TBOOLEAN; }
 
+// s
+// 设置string
 #define setsvalue(L,obj,x) \
   { TValue *i_o=(obj); \
     i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TSTRING; \
     checkliveness(G(L),i_o); }
 
+// u
+// 设置userdata
 #define setuvalue(L,obj,x) \
   { TValue *i_o=(obj); \
     i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TUSERDATA; \
     checkliveness(G(L),i_o); }
 
+// th
+// 设置Thread
 #define setthvalue(L,obj,x) \
   { TValue *i_o=(obj); \
     i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TTHREAD; \
     checkliveness(G(L),i_o); }
 
+// cl
+// 设置函数数值
 #define setclvalue(L,obj,x) \
   { TValue *i_o=(obj); \
     i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TFUNCTION; \
     checkliveness(G(L),i_o); }
 
+// h
+// 设置table数值
 #define sethvalue(L,obj,x) \
   { TValue *i_o=(obj); \
     i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TTABLE; \
     checkliveness(G(L),i_o); }
 
+//pt: proto
+// 设置函数原型数值
+// Q: 函数原型和函数类型什么区别和联系？
 #define setptvalue(L,obj,x) \
   { TValue *i_o=(obj); \
     i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TPROTO; \
@@ -186,6 +249,13 @@ typedef struct lua_TValue {
 #define setttype(obj, tt) (ttype(obj) = (tt))
 
 // 只有这些类型的数据 才是可回收的数据
+// 可垃圾回收的类型: 
+//  * 字符串，
+//  * table, 
+//  * function, 
+//      * 函数也是可垃圾回收的！
+//  * userdata, 
+//  * thread
 #define iscollectable(o)	(ttype(o) >= LUA_TSTRING)
 
 
